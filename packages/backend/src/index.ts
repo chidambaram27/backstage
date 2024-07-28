@@ -14,6 +14,7 @@ backend.add(import('@backstage/plugin-app-backend/alpha'));
 backend.add(import('@backstage/plugin-proxy-backend/alpha'));
 backend.add(import('@backstage/plugin-scaffolder-backend/alpha'));
 backend.add(import('@backstage/plugin-techdocs-backend/alpha'));
+backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 
 // auth plugin
 backend.add(import('@backstage/plugin-auth-backend'));
@@ -37,5 +38,10 @@ backend.add(
 backend.add(import('@backstage/plugin-search-backend/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
+
+backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
+
+backend.add(import('@backstage/plugin-kubernetes-backend/alpha'));
+backend.add(import('@backstage-community/plugin-todo-backend'));
 
 backend.start();
