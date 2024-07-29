@@ -5,6 +5,7 @@ metadata:
   description: A collection of all Presidio Demo templates
 spec:
   targets:
-    - ./nodejs_tpl.yaml
-    - ./terraform_tpl.yaml 
-    - ./springboot_tpl.yaml
+  - ./nodejs_tpl.yaml
+  - ./terraform_tpl.yaml
+  - ./springboot_tpl.yaml
+  - ./terraform_v2_tpl.yaml

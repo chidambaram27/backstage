@@ -1,0 +1,153 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: terraform-v2-template
+  title: Terraform V2
+  description: An FinOps Demo template for the scaffolder that creates a simple Terraform service
+spec:
+  owner: user:guest
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+  - title: Fill in some steps
+    required:
+    - name
+    - description
+    - bu_division
+    - financial_owner_name
+    - technical_owner_name
+    properties:
+      name:
+        title: Name
+        type: string
+        description: Unique name of the component
+        ui:autofocus: true
+        ui:options:
+          rows: 5
+      description:
+        title: Description
+        type: string
+        description: Description of the component
+        ui:autofocus: true
+        ui:options:
+          rows: 5
+      bu_division:
+        title: Business Division
+        type: string
+        description: Business Division of the component
+        ui:autofocus: true
+        ui:options:
+          rows: 5
+      financial_owner_name:
+        title: Financial Owner Name
+        type: string
+        description: Financial Owner Name of the component
+        ui:autofocus: true
+        ui:options:
+          rows: 5
+      technical_owner_name:
+        title: Technical Owner Name
+        type: string
+        description: Technical Owner Name of the component
+        ui:autofocus: true
+        ui:options:
+          rows: 5
+
+  - title: AWS Credentials
+    required:
+    - aws_access_key_id
+    - aws_secret_access_key
+    - aws_session_token
+    properties:
+      aws_access_key_id:
+        title: AWS_ACCESS_KEY_ID
+        type: string
+        description: AWS Access Key ID of the component
+        ui:autofocus: true
+        ui:field: Secret
+        ui:options:
+          rows: 5
+      aws_secret_access_key:
+        title: AWS_SECRET_ACCESS_KEY
+        type: string
+        description: AWS Secret Access Key of the component
+        ui:autofocus: true
+        ui:field: Secret
+        ui:options:
+          rows: 5
+      aws_session_token:
+        title: AWS_SESSION_TOKEN
+        type: string
+        description: AWS Session Token of the component
+        ui:autofocus: true
+        ui:field: Secret
+        ui:options:
+          rows: 5
+
+  - title: Choose a location
+    required:
+    - repoUrl
+    properties:
+      repoUrl:
+        title: Repository Location
+        type: string
+        ui:field: RepoUrlPicker
+        ui:options:
+          allowedHosts:
+          - github.com
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+  # Each step executes an action, in this case one templates files into the working directory.
+  - id: fetch-base
+    name: Fetch Base
+    action: fetch:template
+    input:
+      url: https://github.com/Ajay-Chidambaram/backstage-demo-templates/tree/main/terraformv2
+      copyWithoutTemplating:
+      - .github/**/*.yaml
+      - .github/**/*.yml
+      values:
+        name: ${{ parameters.name }}
+        description: ${{ parameters.description }}
+        destination: ${{ parameters.repoUrl | parseRepoUrl }}
+
+  # This step publishes the contents of the working directory to GitHub.
+  - id: publish
+    name: Publish
+    action: publish:github
+    input:
+      allowedHosts: ['github.com']
+      description: This is ${{ parameters.name }}
+      repoUrl: ${{ parameters.repoUrl }}
+      defaultBranch: main
+      secrets:
+        AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+        AWS_SESSION_TOKEN: ${{ secrets.aws_session_token }}
+      repoVariables:
+        bu_division: ${{ parameters.bu_division }}
+        financial_owner_name: ${{ parameters.financial_owner_name }}
+        technical_owner_name: ${{ parameters.technical_owner_name }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+
+  # The final step is to register our new component in the catalog.
+  - id: register
+    name: Register
+    action: catalog:register
+    input:
+      repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+      catalogInfoPath: '/catalog-info.yaml'
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+    - title: Repository
+      url: ${{ steps['publish'].output.remoteUrl }}
+    - title: Open in catalog
+      icon: catalog
+      entityRef: ${{ steps['register'].output.entityRef }}
